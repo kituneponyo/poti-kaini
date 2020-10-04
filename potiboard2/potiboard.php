@@ -45,6 +45,8 @@ define('USE_DUMP_FOR_DEBUG','0');
 define('POTI_VER' , 'v2.15.0');
 define('POTI_VERLOT' , 'v2.15.0 lot.200830');
 
+require_once('neetsha.php');
+
 if (($phpver = phpversion()) < "5.5.0") {
 	die("本プログラムの動作には PHPバージョン 5.5.0 以上が必要です。<br>\n（現在のPHPバージョン：{$phpver}）");
 }
@@ -561,6 +563,8 @@ function updatelog(){
 	}
 
 	safe_unlink(($page/PAGE_DEF+1).PHP_EXT);
+
+	Neetsha::importNeetshaOekakiLog();
 }
 
 /* 記事部分 */
@@ -602,6 +606,8 @@ function res($resno = 0){
 	$res['limit'] = ($lineindex[$res['no']] - 1 >= LOG_MAX * LOG_LIMIT / 100) ? true : ''; // そろそろ消える。
 	$res['resub'] = $resub;
 	$res['descriptioncom'] = strip_tags($res['com']); //メタタグに使うコメントからタグを除去
+
+	var_dump($res['descriptioncom']);
 
 	$dat['oya'][0] = $res;
 
@@ -1191,6 +1197,10 @@ function usrdel($del,$pwd){
 		return;
 	}
 
+	foreach ($del as $del_id) {
+		Neetsha::delNeetshaOekakiLog(10, $del_id);
+	}
+
 	sort($del);
 	reset($del);
 	if($pwd==""&&$pwdc!="") $pwd=$pwdc;
@@ -1272,6 +1282,10 @@ function admindel($pass){
 			writeFile($fp, implode("\n", $line));
 		}
 		closeFile($fp);
+
+		foreach ($del as $del_id) {
+			Neetsha::delNeetshaOekakiLog(10, $del_id);
+		}
 	}
 	// 削除画面を表示
 	$dat['admin_del'] = true;
@@ -1962,6 +1976,8 @@ function rewrite($no,$name,$email,$sub,$com,$url,$pwd,$admin){
 
 	closeFile($fp);
 
+	Neetsha::delNeetshaOekakiLog(10, $no);
+
 	updatelog();
 
 	redirect(
@@ -2113,6 +2129,8 @@ function replace(){
 	writeFile($fp, implode("\n", $line));
 
 	closeFile($fp);
+
+	Neetsha::delNeetshaOekakiLog(10, $no);
 
 	updatelog();
 
